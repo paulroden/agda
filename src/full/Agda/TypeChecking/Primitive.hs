@@ -240,6 +240,19 @@ instance ToTerm Associativity where
         LeftAssoc  -> lassoc
         RightAssoc -> rassoc
 
+instance ToTerm Blocker where
+  toTerm = do
+    all <- primBlockerAll
+    any <- primBlockerAny
+    meta <- primBlockerMeta
+    lists <- buildList
+    metaTm <- toTerm
+    let go (UnblockOnAny xs) = any `apply` [defaultArg (lists (go <$> Set.toList xs))]
+        go (UnblockOnAll xs) = all `apply` [defaultArg (lists (go <$> Set.toList xs))]
+        go (UnblockOnMeta m) = meta `apply` [defaultArg (metaTm m)]
+        go (UnblockOnProblem _) = __IMPOSSIBLE__
+    pure go
+
 instance ToTerm FixityLevel where
   toTerm = do
     (iToTm :: PrecedenceLevel -> Term) <- toTerm

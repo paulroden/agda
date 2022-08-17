@@ -46,6 +46,7 @@ builtinNat, builtinSuc, builtinZero, builtinNatPlus, builtinNatMinus,
   builtinArgInfo, builtinArgArgInfo,
   builtinArg, builtinArgArg,
   builtinAbs, builtinAbsAbs, builtinAgdaTerm,
+  builtinBlocker, builtinBlockerAll, builtinBlockerAny, builtinBlockerMeta,
   builtinAgdaTermVar, builtinAgdaTermLam, builtinAgdaTermExtLam,
   builtinAgdaTermDef, builtinAgdaTermCon, builtinAgdaTermPi,
   builtinAgdaTermSort, builtinAgdaTermLit, builtinAgdaTermUnsupported, builtinAgdaTermMeta,
@@ -68,7 +69,7 @@ builtinNat, builtinSuc, builtinZero, builtinNatPlus, builtinNatMinus,
   builtinAgdaTCMFreshName, builtinAgdaTCMDeclareDef, builtinAgdaTCMDeclarePostulate, builtinAgdaTCMDefineFun,
   builtinAgdaTCMGetType, builtinAgdaTCMGetDefinition,
   builtinAgdaTCMQuoteTerm, builtinAgdaTCMUnquoteTerm, builtinAgdaTCMQuoteOmegaTerm,
-  builtinAgdaTCMBlockOnMeta, builtinAgdaTCMCommit, builtinAgdaTCMIsMacro,
+  builtinAgdaTCMBlockOnMeta, builtinAgdaTCMCommit, builtinAgdaTCMIsMacro, builtinAgdaTCMBlock,
   builtinAgdaTCMFormatErrorParts, builtinAgdaTCMDebugPrint,
   builtinAgdaTCMWithNormalisation, builtinAgdaTCMWithReconsParams,
   builtinAgdaTCMOnlyReduceDefs, builtinAgdaTCMDontReduceDefs,
@@ -203,6 +204,10 @@ builtinArg                               = "ARG"
 builtinArgInfo                           = "ARGINFO"
 builtinArgArgInfo                        = "ARGARGINFO"
 builtinArgArg                            = "ARGARG"
+builtinBlocker                           = "BLOCKER"
+builtinBlockerAny                        = "BLOCKONANY"
+builtinBlockerAll                        = "BLOCKONALL"
+builtinBlockerMeta                       = "BLOCKONMETA"
 builtinAbs                               = "ABS"
 builtinAbsAbs                            = "ABSABS"
 builtinAgdaTerm                          = "AGDATERM"
@@ -267,6 +272,7 @@ builtinAgdaTCMDefineFun                  = "AGDATCMDEFINEFUN"
 builtinAgdaTCMGetType                    = "AGDATCMGETTYPE"
 builtinAgdaTCMGetDefinition              = "AGDATCMGETDEFINITION"
 builtinAgdaTCMBlockOnMeta                = "AGDATCMBLOCKONMETA"
+builtinAgdaTCMBlock                      = "AGDATCMBLOCK"
 builtinAgdaTCMCommit                     = "AGDATCMCOMMIT"
 builtinAgdaTCMQuoteTerm                  = "AGDATCMQUOTETERM"
 builtinAgdaTCMUnquoteTerm                = "AGDATCMUNQUOTETERM"

@@ -128,6 +128,16 @@ data Arg {a} (A : Set a) : Set a where
 {-# BUILTIN ARG        Arg      #-}
 {-# BUILTIN ARGARG     arg      #-}
 
+data Blocker : Set where
+  blockerAny  : List Blocker → Blocker
+  blockerAll  : List Blocker → Blocker
+  blockerMeta : Meta → Blocker
+
+{-# BUILTIN BLOCKER Blocker #-}
+{-# BUILTIN BLOCKONANY blockerAny #-}
+{-# BUILTIN BLOCKONALL blockerAll #-}
+{-# BUILTIN BLOCKONMETA blockerMeta #-}
+
 -- Name abstraction --
 
 data Abs {a} (A : Set a) : Set a where
@@ -289,6 +299,7 @@ postulate
   getType          : Name → TC Type
   getDefinition    : Name → TC Definition
   blockOnMeta      : ∀ {a} {A : Set a} → Meta → TC A
+  blockTC          : ∀ {a} {A : Set a} → Blocker → TC A
   commitTC         : TC ⊤
   isMacro          : Name → TC Bool
 
@@ -347,6 +358,7 @@ postulate
 {-# BUILTIN AGDATCMGETTYPE                    getType                    #-}
 {-# BUILTIN AGDATCMGETDEFINITION              getDefinition              #-}
 {-# BUILTIN AGDATCMBLOCKONMETA                blockOnMeta                #-}
+{-# BUILTIN AGDATCMBLOCK                      blockTC                    #-}
 {-# BUILTIN AGDATCMCOMMIT                     commitTC                   #-}
 {-# BUILTIN AGDATCMISMACRO                    isMacro                    #-}
 {-# BUILTIN AGDATCMWITHNORMALISATION          withNormalisation          #-}

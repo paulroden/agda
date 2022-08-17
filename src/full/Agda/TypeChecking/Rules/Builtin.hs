@@ -237,6 +237,10 @@ coreBuiltins =
   , builtinAgdaErrorPartTerm                 |-> BuiltinDataCons (tterm --> terrorpart)
   , builtinAgdaErrorPartPatt                 |-> BuiltinDataCons (tpat --> terrorpart)
   , builtinAgdaErrorPartName                 |-> BuiltinDataCons (tqname --> terrorpart)
+  , builtinBlocker                           |-> BuiltinData tset [ builtinBlockerAll, builtinBlockerAny, builtinBlockerMeta ]
+  , builtinBlockerAny                        |-> BuiltinDataCons (tlist tblocker --> tblocker)
+  , builtinBlockerAll                        |-> BuiltinDataCons (tlist tblocker --> tblocker)
+  , builtinBlockerMeta                       |-> BuiltinDataCons (tmeta --> tblocker)
   -- Andreas, 2017-01-12, issue #2386: special handling of builtinEquality
   -- , (builtinEquality                         |-> BuiltinData (hPi "a" (el primLevel) $
   --                                                             hPi "A" (return $ sort $ varSort 0) $
@@ -379,6 +383,7 @@ coreBuiltins =
   , builtinAgdaTCMUnquoteTerm                |-> builtinPostulate (hPi "a" tlevel $ hPi "A" (tsetL 0) $ tterm --> tTCM 1 (varM 0))
   , builtinAgdaTCMQuoteOmegaTerm             |-> builtinPostulate (hPi "A" tsetOmega $ (elInf $ varM 0) --> tTCM_ primAgdaTerm)
   , builtinAgdaTCMBlockOnMeta                |-> builtinPostulate (hPi "a" tlevel $ hPi "A" (tsetL 0) $ tmeta --> tTCM 1 (varM 0))
+  , builtinAgdaTCMBlock                      |-> builtinPostulate (hPi "a" tlevel $ hPi "A" (tsetL 0) $ tblocker --> tTCM 1 (varM 0))
   , builtinAgdaTCMCommit                     |-> builtinPostulate (tTCM_ primUnit)
   , builtinAgdaTCMIsMacro                    |-> builtinPostulate (tqname --> tTCM_ primBool)
   , builtinAgdaTCMWithNormalisation          |-> builtinPostulate (hPi "a" tlevel $ hPi "A" (tsetL 0) $ tbool --> tTCM 1 (varM 0) --> tTCM 1 (varM 0))
@@ -434,6 +439,7 @@ coreBuiltins =
         tstring    = el primString
         tqname     = el primQName
         tmeta      = el primAgdaMeta
+        tblocker   = el primBlocker
         tsize      = El sSizeUniv <$> primSize
         tbool      = el primBool
         thiding    = el primHiding
