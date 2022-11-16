@@ -46,7 +46,7 @@ import qualified Data.Set as Set -- hiding (singleton, null, empty)
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HMap
 import Data.HashSet (HashSet)
-import Data.Semigroup ( Semigroup, (<>)) --, Any(..) )
+import Data.Semigroup ( Semigroup, (<>), Last(..)) --, Any(..) )
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -121,6 +121,9 @@ import Agda.Utils.Update
 import Agda.Utils.WithDefault ( collapseDefault )
 
 import Agda.Utils.Impossible
+import Agda.Utils.RangeMap
+import qualified Agda.Utils.RangeMap as RangeMap
+import Agda.Interaction.Highlighting.Range (rangeToRange)
 
 ---------------------------------------------------------------------------
 -- * Type checking state
@@ -222,6 +225,7 @@ data DisambiguatedName = DisambiguatedName NameKind A.QName
 type DisambiguatedNames = IntMap DisambiguatedName
 
 type ConcreteNames = Map Name [C.Name]
+type RangeTypeInfo = RangeMap (Last (Closure Type))
 
 data PostScopeState = PostScopeState
   { stPostSyntaxInfo          :: !HighlightingInfo
@@ -290,6 +294,7 @@ data PostScopeState = PostScopeState
     --   Best set to True only for calls to pretty*/reify to limit unwanted reductions.
   , stPostLocalPartialDefs    :: !(Set QName)
     -- ^ Local partial definitions, to be stored in the @Interface@
+  , stPostTypeInfo            :: !RangeTypeInfo
   }
   deriving (Generic)
 
@@ -446,6 +451,7 @@ initPostScopeState = PostScopeState
   , stPostConsideringInstance  = False
   , stPostInstantiateBlocking  = False
   , stPostLocalPartialDefs     = Set.empty
+  , stPostTypeInfo             = mempty
   }
 
 initState :: TCState
@@ -684,6 +690,11 @@ stInstanceDefs :: Lens' TempInstanceTable TCState
 stInstanceDefs f s =
   f (stPostInstanceDefs (stPostScopeState s)) <&>
   \x -> s {stPostScopeState = (stPostScopeState s) {stPostInstanceDefs = x}}
+
+stTypeInfo :: Lens' RangeTypeInfo TCState
+stTypeInfo f s =
+  f (stPostTypeInfo (stPostScopeState s)) <&>
+  \x -> s {stPostScopeState = (stPostScopeState s) {stPostTypeInfo = x}}
 
 stConcreteNames :: Lens' ConcreteNames TCState
 stConcreteNames f s =
@@ -4756,7 +4767,6 @@ stateTCLensM l f = do
   (result , x) <- f $ s ^. l
   putTC $ set l x s
   return result
-
 
 ---------------------------------------------------------------------------
 -- ** Monad with capability to block a computation

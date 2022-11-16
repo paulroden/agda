@@ -6,6 +6,7 @@ module Agda.TypeChecking.Rules.Application
   , checkApplication
   , inferApplication
   , checkProjAppToKnownPrincipalArg
+  , recordTypeInfo
   ) where
 
 import Prelude hiding ( null )
@@ -72,6 +73,9 @@ import Agda.Utils.Size
 import Agda.Utils.Tuple
 
 import Agda.Utils.Impossible
+import qualified Agda.Interaction.Highlighting.Range as Range
+import qualified Agda.Utils.RangeMap as RangeMap
+import Data.Semigroup (Last(..))
 
 -----------------------------------------------------------------------------
 -- * Applications
@@ -231,6 +235,18 @@ checkApplication cmp hd args e t =
         , nest 2 $ "v = " <+> prettyTCM v
         ]
       return v
+
+recordTypeInfo
+  :: (MonadTCEnv m, ReadTCState m, MonadTCState m, HasRange marker, MonadDebug m)
+  => marker
+  -> Type
+  -> m ()
+recordTypeInfo m t = do
+  t <- buildClosure t
+  let r = Range.rangeToRange (getRange m)
+  reportSDoc "tc.range" 30 $ "recording type info at" <+> pretty (Range.from r, Range.to r)
+  modifyTCLens stTypeInfo $
+    RangeMap.insert (<>) r (Last t)
 
 -- | Precondition: @Application hd args = appView e@.
 inferApplication :: ExpandHidden -> A.Expr -> A.Args -> A.Expr -> TCM (Term, Type)

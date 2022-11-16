@@ -90,6 +90,8 @@ import Agda.Utils.Time
 import Agda.Utils.Tuple
 
 import Agda.Utils.Impossible
+import Data.Semigroup (Last(..))
+import qualified Agda.Interaction.Highlighting.Range as Range
 
 ------------------------------------------------------------------------
 -- The CommandM monad
@@ -939,6 +941,13 @@ cmd_load' file argv unsolvedOK mode cmd = do
     modifyTCLens stTCWarnings (++ warnings)
 
     ok <- lift $ Imp.typeCheckMain mode src
+
+    rm <- useTC stTypeInfo
+    pp <- fmap vcat $ forM (toList rm) $ \(r, c) ->  do
+      c' <- enterClosure (getLast c) TCP.prettyTCM
+      TCP.prettyTCM (Range.from r, Range.to r) TCP.<+> ": " TCP.<+> pure c'
+
+    reportSDoc "tc.range" 30 $ pure pp
 
     -- The module type checked. If the file was not changed while the
     -- type checker was running then the interaction points and the

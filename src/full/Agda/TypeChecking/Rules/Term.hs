@@ -1252,7 +1252,10 @@ checkExpr' cmp e t =
         A.Dot{} -> genericError "Invalid dotted expression"
 
         -- Application
-        _   | Application hd args <- appView e -> checkApplication cmp hd args e t
+        _   | Application hd args <- appView e -> do
+          tm <- checkApplication cmp hd args e t
+          recordTypeInfo e t
+          pure tm
 
       `catchIlltypedPatternBlockedOnMeta` \ (err, x) -> do
         -- We could not check the term because the type of some pattern is blocked.
@@ -1552,7 +1555,9 @@ inferExpr' exh e = traceCall (InferExpr e) $ do
   reportSDoc "tc.infer" 60 $ vcat
     [ text $ "  hd (raw) = " ++ show hd
     ]
-  inferApplication exh hd args e
+  ~(tm, ty) <- inferApplication exh hd args e
+  recordTypeInfo (getRange e) ty
+  pure (tm, ty)
 
 defOrVar :: A.Expr -> Bool
 defOrVar A.Var{} = True
