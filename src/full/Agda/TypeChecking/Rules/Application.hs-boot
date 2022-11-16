@@ -9,6 +9,7 @@ import Agda.Syntax.Internal
 import Agda.Syntax.Position
 import Agda.TypeChecking.Monad.Base
 import {-# SOURCE #-} Agda.TypeChecking.Monad.Debug (MonadDebug)
+import Agda.TypeChecking.Monad.MetaVars (MonadMetaSolver)
 
 checkArguments :: Comparison -> ExpandHidden -> Range -> [NamedArg A.Expr] -> Type -> Type ->
                   (ArgsCheckState CheckedTarget -> TCM Term) -> TCM Term
@@ -23,7 +24,7 @@ inferApplication :: ExpandHidden -> A.Expr -> A.Args -> A.Expr -> TCM (Term, Typ
 checkProjAppToKnownPrincipalArg  :: Comparison -> A.Expr -> ProjOrigin -> NonEmpty QName -> A.Args -> Type -> Int -> Term -> Type -> PrincipalArgTypeMetas -> TCM Term
 
 recordTypeInfo
-  :: (MonadTCEnv m, ReadTCState m, MonadTCState m, HasRange marker, MonadDebug m)
+  :: (MonadTCEnv m, ReadTCState m, MonadTCState m, HasRange marker, MonadDebug m, MonadMetaSolver m)
   => marker
   -> Type
   -> m ()

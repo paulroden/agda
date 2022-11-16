@@ -29,6 +29,8 @@ import Agda.TypeChecking.Reduce
 import Agda.Utils.Impossible
 import Agda.Utils.Lens
 import Agda.Utils.WithDefault
+import qualified Agda.Utils.RangeMap as Range
+import Data.Semigroup (Last(..))
 
 -- | Run before serialisation to remove any definitions and
 -- meta-variables that are not reachable from the module's public
@@ -44,6 +46,10 @@ eliminateDeadCode bs disp sig ms = Bench.billTo [Bench.DeadCode] $ do
   patsyn <- getPatternSyns
   public <- Set.mapMonotonic anameName . publicNames <$> getScope
   save   <- collapseDefault . optSaveMetas <$> pragmaOptions
+  used <- useTC stTypeInfo
+  let
+    (ti_names, ti_metas) =
+      foldMap (namesAndMetasIn . getLast . snd) (Range.toList used)
   defs   <- (if save then return else traverse instantiateFull)
                  (sig ^. sigDefinitions)
   -- #2921: Eliminating definitions with attached COMPILE pragmas results in
@@ -61,8 +67,8 @@ eliminateDeadCode bs disp sig ms = Bench.billTo [Bench.DeadCode] $ do
       extraRoots =
         Set.fromList $ mapMaybe extraRootsFilter $ HMap.toList defs
 
-      rootNames = Set.union public extraRoots
-      rootMetas =
+      rootNames = ti_names <> Set.union public extraRoots
+      rootMetas = ti_metas <>
         if not save then Set.empty else metasIn
           ( bs
           , sig ^. sigSections

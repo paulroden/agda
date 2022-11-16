@@ -56,7 +56,7 @@ writeToCurrentLog :: (MonadDebug m, MonadTCState m, ReadTCState m) => TypeCheckA
 writeToCurrentLog !d = do
   reportSLn "cache" 10 $ "cachePostScopeState"
   !l <- getsTC stPostScopeState
-  modifyCache $ fmap $ \lfc -> lfc{ lfcCurrent = (d, l { stPostTypeInfo = mempty }) : lfcCurrent lfc}
+  modifyCache $ fmap $ \lfc -> lfc{ lfcCurrent = (d, l) : lfcCurrent lfc}
 
 {-# SPECIALIZE restorePostScopeState :: PostScopeState -> TCM () #-}
 restorePostScopeState :: (MonadDebug m, MonadTCState m) => PostScopeState -> m ()
@@ -67,7 +67,6 @@ restorePostScopeState pss = do
         ws = s^.stTCWarnings
         pss' = pss{stPostInteractionPoints = stPostInteractionPoints pss `mergeIPMap` ipoints
                   ,stPostTCWarnings = stPostTCWarnings pss `mergeWarnings` ws
-                  ,stPostTypeInfo = s ^. stTypeInfo
                   }
     in  s{stPostScopeState = pss'}
   where

@@ -52,6 +52,7 @@ import Agda.Syntax.Abstract.Pretty
 import Agda.Syntax.Info (mkDefInfo)
 import Agda.Syntax.Translation.ConcreteToAbstract
 import Agda.Syntax.Translation.AbstractToConcrete hiding (withScope)
+import qualified Agda.Syntax.Internal as I
 import Agda.Syntax.Scope.Base
 import Agda.Syntax.TopLevelModuleName
 
@@ -92,6 +93,8 @@ import Agda.Utils.Tuple
 import Agda.Utils.Impossible
 import Data.Semigroup (Last(..))
 import qualified Agda.Interaction.Highlighting.Range as Range
+import qualified Agda.TypeChecking.Substitute as S
+import Agda.TypeChecking.Telescope (flattenTel)
 
 ------------------------------------------------------------------------
 -- The CommandM monad
@@ -943,9 +946,16 @@ cmd_load' file argv unsolvedOK mode cmd = do
     ok <- lift $ Imp.typeCheckMain mode src
 
     rm <- useTC stTypeInfo
-    pp <- fmap vcat $ forM (toList rm) $ \(r, c) ->  do
-      c' <- enterClosure (getLast c) TCP.prettyTCM
-      TCP.prettyTCM (Range.from r, Range.to r) TCP.<+> ": " TCP.<+> pure c'
+    pp <- fmap vcat $ forM (toList rm) $ \(r, Last (tele, mv)) ->
+      lookupMetaInstantiation mv >>= \case
+        InstV mv -> addContext tele $ do
+          let lam x t = I.Lam (argInfo x) (I.Abs (unArg x) t)
+          c' <- TCP.prettyTCM $
+            (foldr lam (instBody mv) (instTel mv))
+              `S.apply` [I.Var i [] <$ I.argFromDom d | (i, d) <- zip [length tele - 1, length tele - 2 .. 0] (flattenTel tele)]
+              --
+          TCP.prettyTCM (Range.from r, Range.to r) TCP.<+> ": " TCP.<+> pure c' TCP.<+> " at " TCP.<+> TCP.prettyTCM tele
+        _ -> pure mempty
 
     reportSDoc "tc.range" 30 $ pure pp
 

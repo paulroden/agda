@@ -225,7 +225,7 @@ data DisambiguatedName = DisambiguatedName NameKind A.QName
 type DisambiguatedNames = IntMap DisambiguatedName
 
 type ConcreteNames = Map Name [C.Name]
-type RangeTypeInfo = RangeMap (Last (Closure Type))
+type RangeTypeInfo = RangeMap (Last (Telescope, MetaId))
 
 data PostScopeState = PostScopeState
   { stPostSyntaxInfo          :: !HighlightingInfo
@@ -997,6 +997,7 @@ data Interface = Interface
   , iBuiltin         :: BuiltinThings (String, QName)
   , iForeignCode     :: Map BackendName [ForeignCode]
   , iHighlighting    :: HighlightingInfo
+  , iTypeInfo        :: RangeTypeInfo
   , iDefaultPragmaOptions :: [OptionsPragma]
     -- ^ Pragma options set in library files.
   , iFilePragmaOptions    :: [OptionsPragma]
@@ -1014,7 +1015,7 @@ instance Pretty Interface where
   pretty (Interface
             sourceH source fileT importedM moduleN topModN scope insideS
             signature metas display userwarn importwarn builtin
-            foreignCode highlighting libPragmaO filePragmaO oUsed
+            foreignCode highlighting typeInfo libPragmaO filePragmaO oUsed
             patternS warnings partialdefs) =
 
     hang "Interface" 2 $ vcat

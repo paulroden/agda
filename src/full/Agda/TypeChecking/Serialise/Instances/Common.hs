@@ -59,6 +59,7 @@ import Agda.Utils.WithDefault
 
 import Agda.Utils.Impossible
 import Agda.Utils.CallStack
+import Data.Semigroup (Last(..))
 
 instance {-# OVERLAPPING #-} EmbPrj String where
   icod_   = icodeString
@@ -113,6 +114,10 @@ instance EmbPrj () where
   value = vcase valu where
     valu [] = valuN ()
     valu _  = malformed
+
+instance EmbPrj a => EmbPrj (Last a) where
+  icod_ (Last a) = icod_ a
+  value = fmap Last . value
 
 instance (EmbPrj a, EmbPrj b) => EmbPrj (a, b) where
   icod_ (a, b) = icodeN' (,) a b

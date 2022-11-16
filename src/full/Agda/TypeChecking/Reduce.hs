@@ -1678,7 +1678,7 @@ instance InstantiateFull Interface where
 instantiateFullExceptForDefinitions' :: Interface -> ReduceM Interface
 instantiateFullExceptForDefinitions'
   (Interface h s ft ms mod tlmod scope inside sig metas display userwarn
-     importwarn b foreignCode highlighting libPragmas filePragmas
+     importwarn b foreignCode highlighting ty libPragmas filePragmas
      usedOpts patsyns warnings partialdefs) =
   Interface h s ft ms mod tlmod scope inside
     <$> ((\s r -> Sig { _sigSections     = s
@@ -1694,6 +1694,7 @@ instantiateFullExceptForDefinitions'
     <*> instantiateFull' b
     <*> return foreignCode
     <*> return highlighting
+    <*> return ty
     <*> return libPragmas
     <*> return filePragmas
     <*> return usedOpts

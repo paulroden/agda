@@ -446,6 +446,7 @@ typeCheckMain mode src = do
     Just ( iModuleName (miInterface mi)
          , iTopLevelModuleName (miInterface mi)
          )
+  stTypeInfo `setTCLens` iTypeInfo (miInterface mi)
 
   return $ CheckResult' mi src
   where
@@ -1231,6 +1232,7 @@ buildInterface src topLevel = do
     userwarns   <- useTC stLocalUserWarnings
     importwarn  <- useTC stWarningOnImport
     syntaxInfo  <- useTC stSyntaxInfo
+    typeInfo    <- useTC stTypeInfo
     optionsUsed <- useTC stPragmaOptions
     partialDefs <- useTC stLocalPartialDefs
 
@@ -1257,6 +1259,7 @@ buildInterface src topLevel = do
           , iBuiltin         = builtin'
           , iForeignCode     = foreignCode
           , iHighlighting    = syntaxInfo
+          , iTypeInfo        = typeInfo
           , iDefaultPragmaOptions = defPragmas
           , iFilePragmaOptions    = filePragmas
           , iOptionsUsed     = optionsUsed

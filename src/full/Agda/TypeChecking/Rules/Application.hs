@@ -76,6 +76,7 @@ import Agda.Utils.Impossible
 import qualified Agda.Interaction.Highlighting.Range as Range
 import qualified Agda.Utils.RangeMap as RangeMap
 import Data.Semigroup (Last(..))
+import Agda.TypeChecking.Warnings
 
 -----------------------------------------------------------------------------
 -- * Applications
@@ -237,16 +238,26 @@ checkApplication cmp hd args e t =
       return v
 
 recordTypeInfo
-  :: (MonadTCEnv m, ReadTCState m, MonadTCState m, HasRange marker, MonadDebug m)
+  :: ( MonadTCEnv m
+     , ReadTCState m
+     , MonadTCState m
+     , HasRange marker
+     , MonadDebug m
+     , MonadMetaSolver m
+     )
   => marker
   -> Type
   -> m ()
 recordTypeInfo m t = do
-  t <- buildClosure t
-  let r = Range.rangeToRange (getRange m)
+  let
+    r = Range.rangeToRange (getRange m)
+    t' = sort (getSort t)
   reportSDoc "tc.range" 30 $ "recording type info at" <+> pretty (Range.from r, Range.to r)
+  (mv, tm) <- newValueMeta DontRunMetaOccursCheck CmpEq t'
+  cxtTel <- getContextTelescope
+  assignTerm' mv (telToArgs cxtTel) (unEl t)
   modifyTCLens stTypeInfo $
-    RangeMap.insert (<>) r (Last t)
+    RangeMap.insert (<>) r (Last (cxtTel, mv))
 
 -- | Precondition: @Application hd args = appView e@.
 inferApplication :: ExpandHidden -> A.Expr -> A.Args -> A.Expr -> TCM (Term, Type)
