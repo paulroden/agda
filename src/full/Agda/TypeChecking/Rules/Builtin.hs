@@ -33,6 +33,7 @@ import Agda.TypeChecking.EtaContract
 import Agda.TypeChecking.Functions
 import Agda.TypeChecking.Irrelevance
 import Agda.TypeChecking.Names
+import Agda.TypeChecking.Polarity
 import Agda.TypeChecking.Pretty
 import Agda.TypeChecking.Primitive
 import Agda.TypeChecking.Positivity.Occurrence
@@ -808,6 +809,10 @@ bindBuiltinInfo (BuiltinInfo s d) e = do
                 a   = defAbstract info
                 mcc = defCompiled info
                 inv = defInverse info
+            -- What happens if defArgOccurrences info does not match
+            -- primFunArgOccurrences pf? Let's require the latter to
+            -- be the empty list.
+            unless (primFunArgOccurrences pf == []) __IMPOSSIBLE__
             bindPrimitive pfname $ pf { primFunName = qx }
             addConstant qx $ info { theDef = Primitive { primAbstr    = a
                                                        , primName     = pfname
@@ -977,7 +982,10 @@ bindBuiltinNoDef b q = inTopContext $ do
                           , primInv      = NotInjective
                           , primCompiled = Just (CC.Done [] $ Def q [])
                           }
-      addConstant' q defaultArgInfo q t def
+      lang <- getLanguage
+      addConstant q $
+        (defaultDefn defaultArgInfo q t lang def)
+          { defArgOccurrences = primFunArgOccurrences pf }
       axioms v
       bindBuiltinName b v
 

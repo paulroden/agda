@@ -719,12 +719,15 @@ checkPrimitive i x (Arg info e) =
             _ -> defaultArgInfo
     unless (info == expectedInfo) $ typeError $ WrongModalityForPrimitive name info expectedInfo
     bindPrimitive s pf
-    addConstant' x info x t $
-        Primitive { primAbstr    = Info.defAbstract i
-                  , primName     = s
-                  , primClauses  = []
-                  , primInv      = NotInjective
-                  , primCompiled = Nothing }
+    lang <- getLanguage
+    addConstant x $
+      (defaultDefn info x t lang $
+       Primitive { primAbstr    = Info.defAbstract i
+                 , primName     = s
+                 , primClauses  = []
+                 , primInv      = NotInjective
+                 , primCompiled = Nothing })
+        { defArgOccurrences = primFunArgOccurrences pf }
 
 -- | Check a pragma.
 checkPragma :: Range -> A.Pragma -> TCM ()
